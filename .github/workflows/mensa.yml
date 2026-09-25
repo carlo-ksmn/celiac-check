@@ -1,0 +1,36 @@
+name: Glutenfrei-Check Mensa
+
+on:
+  schedule:
+    # GitHub rechnet Cron-Zeiten IMMER in UTC, nicht in deutscher Zeit.
+    #   Sommerzeit (Ende März bis Ende Oktober): Berlin = UTC+2 -> 07:05 UTC = 09:05 Uhr
+    #   Winterzeit (Ende Oktober bis Ende März): Berlin = UTC+1 -> 07:05 UTC = 08:05 Uhr
+    # Im Winter kommt die Nachricht also eine Stunde früher. Wenn du auch im
+    # Winter 9 Uhr willst, stelle im Oktober auf "5 8 * * 1-5" um.
+    #
+    # Format: Minute Stunde Tag Monat Wochentag  (1-5 = Montag bis Freitag)
+    # Minute 5 statt 0, weil GitHub zur vollen Stunde stark ausgelastet ist.
+    # Geplante Läufe können trotzdem 5-30 Minuten später starten.
+    - cron: "5 7 * * 1-5"
+
+  # Erlaubt, den Workflow in GitHub per Knopf "Run workflow" manuell zu starten.
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code aus dem Repo holen
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Skript ausführen und Nachricht senden
+        env:
+          # Der Topic-Name kommt aus dem GitHub Secret "NTFY_TOPIC"
+          # (Settings -> Secrets and variables -> Actions).
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python check_mensa.py
