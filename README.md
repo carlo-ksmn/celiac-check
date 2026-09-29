@@ -1,6 +1,6 @@
 # Glutenfrei-Check Mensa Mannheim
 
-Schickt werktags morgens eine Push-Nachricht aufs Handy. Darin steht, welche Gerichte in der **Mensa am Schloss** und im **EO Bar & Lounge** laut Speiseplan kein glutenhaltiges Getreide enthalten.
+Schickt werktags morgens eine Push-Nachricht aufs Handy. Darin steht, welche Gerichte in der **Mensa am Schloss**, im **greenes²** und im **EO Bar & Lounge** laut Speiseplan kein glutenhaltiges Getreide enthalten.
 
 > Angaben laut Speiseplan-Kennzeichnung, keine Garantie für Kreuzkontamination. Das ist eine Convenience-Info und keine medizinische Sicherheit.
 
@@ -9,6 +9,7 @@ Schickt werktags morgens eine Push-Nachricht aufs Handy. Darin steht, welche Ger
 | Ort | Quelle | Hinweis |
 |---|---|---|
 | Mensa am Schloss | [OpenMensa-API](https://openmensa.org/api/v2/canteens/285), ID **285** | Allergene als Text in `notes` |
+| greenes² | [OpenMensa-API](https://openmensa.org/api/v2/canteens/1718), ID **1718** | wie Mensa am Schloss |
 | EO Bar & Lounge | Website [eo-mannheim.de](https://eo-mannheim.de/#mittagstisch) (Scraping) | Nicht bei OpenMensa gelistet. Auf der Seite steht kein Datum. Wenn sich das Seitendesign ändert, meldet die Nachricht „konnte nicht gelesen werden“. |
 
 **Bekannte Lücke:** Die Kennzeichnung ist nicht immer vollständig. Beispiele: „Backhendel“ ohne Gluten-Kürzel, „Gnocchi“ ohne Weizen. Solche Gerichte zeigt das Skript mit ⚠️ an. Dafür sucht es nach Warnwörtern im Gerichtnamen (`NAME_WARNING_WORDS`).
@@ -31,7 +32,7 @@ NTFY_TOPIC=dein-topic-name python3 check_mensa.py
 
 Alle Einstellungen stehen oben in `check_mensa.py`:
 
-- **Mensen:** `OPENMENSA_CANTEENS`. Um eine weitere Mensa hinzuzufügen, z. B. `"greenes²": 1718`, suchst du die ID auf openmensa.org. Mit `CHECK_EO = False` schaltest du das EO ab.
+- **Mensen:** `OPENMENSA_CANTEENS`. Um eine weitere Mensa hinzuzufügen, suchst du ihre ID auf openmensa.org und ergänzt eine Zeile wie `"Name": ID,`. Mit `CHECK_EO = False` schaltest du das EO ab.
 - **Gluten-Wörter:** `GLUTEN_KEYWORDS` (für OpenMensa) und `EO_GLUTEN_CODES` (Kürzel auf der EO-Seite).
 - **Warnwörter im Namen:** `NAME_WARNING_WORDS`
 - **Topic-Name:** Der steht nicht im Code, sondern als GitHub Secret `NTFY_TOPIC` (Repo → Settings → Secrets and variables → Actions). Dort kannst du ihn ändern. Danach auch in der ntfy-App das neue Topic abonnieren.

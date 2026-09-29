@@ -32,9 +32,9 @@ from zoneinfo import ZoneInfo
 
 # Mensen bei OpenMensa: Anzeigename -> Canteen-ID.
 # IDs findest du z. B. unter https://openmensa.org/api/v2/canteens/285
-# (Beispiel: "greenes²" in der Mensa am Schloss hat die ID 1718.)
 OPENMENSA_CANTEENS = {
     "Mensa am Schloss": 285,
+    "greenes²": 1718,  # im Gebäude der Mensa am Schloss
 }
 
 # EO Bar & Lounge: nicht bei OpenMensa, daher lesen wir die Website aus.
