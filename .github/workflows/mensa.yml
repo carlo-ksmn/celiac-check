@@ -1,20 +1,24 @@
 name: Glutenfrei-Check Mensa
 
 on:
-  schedule:
-    # GitHub rechnet Cron-Zeiten IMMER in UTC, nicht in deutscher Zeit.
-    #   Sommerzeit (Ende März bis Ende Oktober): Berlin = UTC+2 -> 07:05 UTC = 09:05 Uhr
-    #   Winterzeit (Ende Oktober bis Ende März): Berlin = UTC+1 -> 07:05 UTC = 08:05 Uhr
-    # Im Winter kommt die Nachricht also eine Stunde früher. Wenn du auch im
-    # Winter 9 Uhr willst, stelle im Oktober auf "5 8 * * 1-5" um.
-    #
-    # Format: Minute Stunde Tag Monat Wochentag  (1-5 = Montag bis Freitag)
-    # Minute 5 statt 0, weil GitHub zur vollen Stunde stark ausgelastet ist.
-    # Geplante Läufe können trotzdem 5-30 Minuten später starten.
-    - cron: "5 7 * * 1-5"
-
-  # Erlaubt, den Workflow in GitHub per Knopf "Run workflow" manuell zu starten.
+  # HAUPT-START: cron-job.org ruft jeden Werktag um 9:00 Uhr (deutsche Zeit)
+  # die GitHub-API auf und startet diesen Workflow ("workflow_dispatch").
+  # Das ist pünktlich, im Gegensatz zum GitHub-Zeitplan unten.
+  # Auch der Knopf "Run workflow" in GitHub nutzt diesen Weg.
   workflow_dispatch:
+    inputs:
+      force:
+        description: "Auch senden, wenn heute schon gesendet wurde"
+        type: boolean
+        default: false
+
+  # BACKUP: GitHub-eigener Zeitplan. Der startet oft Stunden zu spät,
+  # springt aber ein, falls cron-job.org mal ausfällt. Wurde heute schon
+  # gesendet, schickt das Skript nichts doppelt.
+  schedule:
+    # GitHub rechnet in UTC: 07:05 UTC = 09:05 Uhr (Sommer) bzw. 08:05 Uhr (Winter).
+    # Format: Minute Stunde Tag Monat Wochentag  (1-5 = Montag bis Freitag)
+    - cron: "5 7 * * 1-5"
 
 jobs:
   check:
@@ -33,4 +37,6 @@ jobs:
           # Der Topic-Name kommt aus dem GitHub Secret "NTFY_TOPIC"
           # (Settings -> Secrets and variables -> Actions).
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          # Nur beim manuellen Start mit Häkchen "force" gesetzt.
+          FORCE_SEND: ${{ inputs.force }}
         run: python check_mensa.py

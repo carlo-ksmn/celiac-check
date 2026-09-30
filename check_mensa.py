@@ -280,8 +280,26 @@ def send_ntfy(topic, title, body):
         print(f"Gesendet an ntfy (HTTP {response.status}).")
 
 
+def already_sent_today(topic):
+    """
+    Fragt bei ntfy nach, ob heute schon eine Glutenfrei-Nachricht im Topic ist.
+    So gibt es keine doppelte Nachricht, wenn cron-job.org UND der (oft
+    verspaetete) GitHub-Zeitplan beide laufen.
+    Hinweis: ntfy.sh speichert Nachrichten nur ca. 12 Stunden.
+    """
+    midnight = datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0, microsecond=0)
+    url = f"{NTFY_SERVER}/{topic}/json?poll=1&since={int(midnight.timestamp())}"
+    for line in http_get(url).splitlines():
+        event = json.loads(line)
+        if event.get("event") == "message" and event.get("title", "").startswith("Glutenfrei heute"):
+            return True
+    return False
+
+
 def main():
     dry_run = "--dry-run" in sys.argv
+    # FORCE_SEND=true -> auch senden, wenn heute schon gesendet wurde (zum Testen)
+    force = os.environ.get("FORCE_SEND", "").lower() == "true"
     today = datetime.datetime.now(TIMEZONE).date()
 
     title, body = build_message(today)
@@ -297,6 +315,9 @@ def main():
     topic = os.environ.get("NTFY_TOPIC", "").strip()
     if not topic:
         sys.exit("Fehler: Umgebungsvariable NTFY_TOPIC ist nicht gesetzt.")
+    if not force and already_sent_today(topic):
+        print("Heute wurde schon gesendet, deshalb nichts Neues geschickt.")
+        return
     send_ntfy(topic, title, body)
 
 
