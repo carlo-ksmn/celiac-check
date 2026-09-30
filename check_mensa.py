@@ -68,7 +68,7 @@ EO_GLUTEN_CODES = ["Gl", "GlW", "GlD", "GlR", "GlH", "GlG", "GIG"]
 
 # Warnwoerter im NAMEN des Gerichts. Die Kennzeichnung ist nicht immer
 # vollstaendig (z. B. "Backhendel" ohne Gluten-Kuerzel). Findet sich eines
-# dieser Woerter, wird das Gericht mit einer Warnung angezeigt statt als "ok".
+# dieser Woerter, wird das Gericht mit "(✅)" statt "✅" angezeigt.
 NAME_WARNING_WORDS = [
     "panier", "paniert", "backhendel", "backfisch", "schnitzel", "cordon",
     "gnocchi", "spätzle", "knödel", "maultasche", "nudel", "pasta",
@@ -76,6 +76,7 @@ NAME_WARNING_WORDS = [
     "burger", "baguette", "ciabatta", "pizza", "flammkuchen", "wrap",
     "tortilla", "couscous", "bulgur", "seitan", "crouton", "kuchen",
     "strudel", "teig", "mehlschwitze", "sojasauce", "sojasoße",
+    "vegane wurst", "vegane bratwurst",  # oft aus Weizeneiweiss (Seitan)
 ]
 
 DISCLAIMER = "Angaben laut Speiseplan-Kennzeichnung, keine Garantie für Kreuzkontamination."
@@ -242,9 +243,9 @@ def format_section(title, status, meals):
         label = f"{meal['name']} ({meal['category']})" if meal["category"] else meal["name"]
         if meal["price"]:
             label += f", {meal['price']}"
-        warning = name_warning(meal["name"])
-        if warning:
-            lines.append(f"⚠️ {label}. Nicht als glutenhaltig gekennzeichnet, aber der Name enthält „{warning}“, also nachfragen.")
+        # (✅) = laut Kennzeichnung glutenfrei, aber der Name enthaelt ein Warnwort
+        if name_warning(meal["name"]):
+            lines.append(f"(✅) {label}")
         else:
             lines.append(f"✅ {label}")
     return lines

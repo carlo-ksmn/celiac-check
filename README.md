@@ -12,7 +12,7 @@ Schickt werktags morgens eine Push-Nachricht aufs Handy. Darin steht, welche Ger
 | greenes² | [OpenMensa-API](https://openmensa.org/api/v2/canteens/1718), ID **1718** | wie Mensa am Schloss |
 | EO Bar & Lounge | Website [eo-mannheim.de](https://eo-mannheim.de/#mittagstisch) (Scraping) | Nicht bei OpenMensa gelistet. Auf der Seite steht kein Datum. Wenn sich das Seitendesign ändert, meldet die Nachricht „konnte nicht gelesen werden“. |
 
-**Bekannte Lücke:** Die Kennzeichnung ist nicht immer vollständig. Beispiele: „Backhendel“ ohne Gluten-Kürzel, „Gnocchi“ ohne Weizen. Solche Gerichte zeigt das Skript mit ⚠️ an. Dafür sucht es nach Warnwörtern im Gerichtnamen (`NAME_WARNING_WORDS`).
+**Bekannte Lücke:** Die Kennzeichnung ist nicht immer vollständig. Beispiele: „Backhendel“ ohne Gluten-Kürzel, „Gnocchi“ ohne Weizen. Solche Gerichte zeigt das Skript mit (✅) statt ✅ an. Dafür sucht es nach Warnwörtern im Gerichtnamen (`NAME_WARNING_WORDS`).
 
 ## Lokal testen
 
