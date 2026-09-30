@@ -103,6 +103,11 @@ def clean_name(text):
     return text.strip(" ,")
 
 
+def format_price(value):
+    """4.0 -> '4,00 €' (deutsches Format)."""
+    return f"{value:.2f} €".replace(".", ",")
+
+
 def name_warning(name):
     """Gibt das erste Warnwort zurueck, das im Namen vorkommt, sonst None."""
     lower = name.lower()
@@ -122,7 +127,7 @@ def fetch_openmensa(canteen_id, day):
     Holt die Gerichte einer Mensa fuer einen Tag.
     Rueckgabe: (status, gerichte)
       status ist "ok", "closed" oder "no_data"
-      gerichte ist eine Liste von {"name", "category", "has_gluten"}
+      gerichte ist eine Liste von {"name", "category", "price", "has_gluten"}
     """
     date_str = day.isoformat()
     try:
@@ -140,9 +145,12 @@ def fetch_openmensa(canteen_id, day):
     for meal in meals:
         notes_text = " ".join(meal.get("notes", [])).lower()
         has_gluten = any(keyword in notes_text for keyword in GLUTEN_KEYWORDS)
+        # Studierendenpreis als Zahl (z. B. 4.0), kann auch fehlen (None)
+        student_price = (meal.get("prices") or {}).get("students")
         result.append({
             "name": clean_name(meal["name"]),
             "category": meal.get("category", ""),
+            "price": format_price(student_price) if student_price is not None else "",
             "has_gluten": has_gluten,
         })
     return "ok", result
@@ -169,8 +177,9 @@ def fetch_eo():
         return "parse_error", []
 
     # Jede Tabellenzeile: <td class="title">...</td> <td class="description">...</td>
+    #                     <td class="price">6,50 €</td>
     rows = re.findall(
-        r'<td class="title">(.*?)</td>\s*<td class="description">(.*?)</td>',
+        r'<td class="title">(.*?)</td>\s*<td class="description">(.*?)</td>\s*<td class="price">(.*?)</td>',
         section.group(1),
         re.S,
     )
@@ -178,7 +187,7 @@ def fetch_eo():
         return "parse_error", []
 
     result = []
-    for title_html, description_html in rows:
+    for title_html, description_html, price_html in rows:
         # Alle Allergen-Kuerzel stehen in <sup>(GlW,Mi,...)</sup>
         codes = []
         for sup in re.findall(r"<sup>\((.*?)\)</sup>", description_html):
@@ -190,10 +199,13 @@ def fetch_eo():
         name = html.unescape(re.sub(r"<[^>]+>", "", name))
         category = html.unescape(re.sub(r"<[^>]+>", "", title_html)).strip()
         category = category.replace("EO Mittagstisch", "").strip()
+        # Preis steht schon fertig da (Studierendenpreis laut EO), z. B. "6,50 €"
+        price = html.unescape(re.sub(r"<[^>]+>", "", price_html)).strip()
 
         result.append({
             "name": clean_name(name),
             "category": category,
+            "price": price,
             "has_gluten": has_gluten,
         })
     return "ok", result
@@ -228,6 +240,8 @@ def format_section(title, status, meals):
 
     for meal in candidates:
         label = f"{meal['name']} ({meal['category']})" if meal["category"] else meal["name"]
+        if meal["price"]:
+            label += f", {meal['price']}"
         warning = name_warning(meal["name"])
         if warning:
             lines.append(f"⚠️ {label}. Nicht als glutenhaltig gekennzeichnet, aber der Name enthält „{warning}“, also nachfragen.")
