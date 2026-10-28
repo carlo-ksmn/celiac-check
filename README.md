@@ -36,7 +36,7 @@ Alle Einstellungen stehen oben in `check_mensa.py`:
 - **Gluten-Wörter:** `GLUTEN_KEYWORDS` (für OpenMensa) und `EO_GLUTEN_CODES` (Kürzel auf der EO-Seite).
 - **Warnwörter im Namen:** `NAME_WARNING_WORDS`
 - **Topic-Name:** Der steht nicht im Code, sondern als GitHub Secret `NTFY_TOPIC` (Repo → Settings → Secrets and variables → Actions). Dort kannst du ihn ändern. Danach auch in der ntfy-App das neue Topic abonnieren.
-- **Uhrzeit:** in `.github/workflows/mensa.yml` die Zeile `cron: "5 7 * * 1-5"`. Achtung, das ist **UTC**: 07:05 UTC ist im Sommer 09:05 und im Winter 08:05 deutscher Zeit.
+- **Uhrzeit:** Die Hauptzeit (6:00 Uhr) stellst du bei **cron-job.org** im Job ein, die Zeitzone dort ist Europe/Berlin. Der GitHub-Zeitplan in `.github/workflows/mensa.yml` (`cron: "5 5 * * 1-5"`) ist nur ein Backup und rechnet in **UTC**: 05:05 UTC ist im Winter 06:05 und im Sommer 07:05 deutscher Zeit.
 
 ## ntfy-App einrichten
 

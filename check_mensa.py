@@ -22,6 +22,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 from zoneinfo import ZoneInfo
@@ -291,8 +292,19 @@ def send_ntfy(topic, title, body):
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        print(f"Gesendet an ntfy (HTTP {response.status}).")
+    # Bis zu 5 Versuche mit wachsender Pause (30 s, 60 s, ...), falls ntfy.sh
+    # kurz nicht erreichbar ist. Erst danach schlaegt der Lauf fehl.
+    attempts = 5
+    for attempt in range(1, attempts + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                print(f"Gesendet an ntfy (HTTP {response.status}).")
+                return
+        except Exception as error:
+            print(f"Versuch {attempt}/{attempts} fehlgeschlagen: {error}", file=sys.stderr)
+            if attempt == attempts:
+                raise
+            time.sleep(30 * attempt)
 
 
 def already_sent_today(topic):
@@ -304,7 +316,13 @@ def already_sent_today(topic):
     """
     midnight = datetime.datetime.now(TIMEZONE).replace(hour=0, minute=0, second=0, microsecond=0)
     url = f"{NTFY_SERVER}/{topic}/json?poll=1&since={int(midnight.timestamp())}"
-    for line in http_get(url).splitlines():
+    try:
+        answer = http_get(url)
+    except Exception as error:
+        # Lieber evtl. doppelt senden als gar nicht.
+        print(f"Konnte nicht prüfen, ob schon gesendet wurde ({error}), sende trotzdem.", file=sys.stderr)
+        return False
+    for line in answer.splitlines():
         event = json.loads(line)
         if event.get("event") == "message" and event.get("title", "").startswith("Glutenfrei heute"):
             return True

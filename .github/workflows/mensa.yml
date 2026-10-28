@@ -1,7 +1,7 @@
 name: Glutenfrei-Check Mensa
 
 on:
-  # HAUPT-START: cron-job.org ruft jeden Werktag um 9:00 Uhr (deutsche Zeit)
+  # HAUPT-START: cron-job.org ruft jeden Werktag um 6:00 Uhr (deutsche Zeit)
   # die GitHub-API auf und startet diesen Workflow ("workflow_dispatch").
   # Das ist pünktlich, im Gegensatz zum GitHub-Zeitplan unten.
   # Auch der Knopf "Run workflow" in GitHub nutzt diesen Weg.
@@ -16,19 +16,19 @@ on:
   # springt aber ein, falls cron-job.org mal ausfällt. Wurde heute schon
   # gesendet, schickt das Skript nichts doppelt.
   schedule:
-    # GitHub rechnet in UTC: 07:05 UTC = 09:05 Uhr (Sommer) bzw. 08:05 Uhr (Winter).
+    # GitHub rechnet in UTC: 05:05 UTC = 06:05 Uhr (Winter) bzw. 07:05 Uhr (Sommer).
     # Format: Minute Stunde Tag Monat Wochentag  (1-5 = Montag bis Freitag)
-    - cron: "5 7 * * 1-5"
+    - cron: "5 5 * * 1-5"
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - name: Code aus dem Repo holen
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Python einrichten
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
